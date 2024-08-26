@@ -1,100 +1,112 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TextInput, Button, Alert } from 'react-native';
-import { fetchAccounts, fetchContacts, createAccount } from '../../api/dynamicsCRM';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { fetchAllCandidates } from '../../api/dynamicsCRM';
 import { getToken } from '../../api/auth';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import CandidateDetails from '../../components/HomeComponent/CandidateDetails';
+import { deleteToken, retrieveUserInfo } from '../../api/tokenManager';
+import { useAuth } from '../../components/libraries/AuthContext';
+import { useModal } from '../../components/libraries/ModalContext';
+
 
 const HomeScreen = ({ clientId, tenantId, clientSecret }) => {
-  const [accounts, setAccounts] = useState([]);
-  const [contacts, setContacts] = useState([]);
+  const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showAccounts, setShowAccounts] = useState(true);
-  const [newAccountName, setNewAccountName] = useState('');
+  const [email, setEmail] = useState(null); // Use state to store email
+  const route = useRoute();
+  const navigation = useNavigation(); 
+  const { handleAuthChange } = useAuth();
+  const { showModal } = useModal();
+
+ 
+  // Fetch email from storage
+  const fetchEmailFromStorage = async () => {
+    try {
+      const userInfo = await retrieveUserInfo();
+      if (userInfo && userInfo.cygni_emailaddress) {
+        setEmail(userInfo.cygni_emailaddress);
+        fetchData(userInfo.cygni_emailaddress);
+      } else {
+        console.error('No email found in user info');
+      }
+    } catch (error) {
+      console.error('Error retrieving email from storage:', error);
+    }
+  };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Check if email is coming from route parameters
+    const { email: routeEmail } = route.params || {};
 
-  const fetchData = async () => {
+    if (routeEmail) {
+      // If email is provided in route params, use it
+      setEmail(routeEmail);
+      fetchData(routeEmail);
+    } else {
+      // Otherwise, retrieve email from storage
+      fetchEmailFromStorage();
+    }
+  }, [route.params]);
+
+  const fetchData = async (email) => {
     setLoading(true);
     try {
       const accessToken = await getToken(clientId, tenantId, clientSecret);
-      const fetchedAccounts = await fetchAccounts(accessToken);
-      setAccounts(fetchedAccounts);
-      const fetchedContacts = await fetchContacts(accessToken);
-      setContacts(fetchedContacts);
+      const response = await fetchAllCandidates(accessToken);
+      const fetchedCandidates = response.value; // Adjust if your response is different
+
+      if (Array.isArray(fetchedCandidates)) {
+        // Filter candidates based on the email
+        const filteredCandidates = fetchedCandidates.filter(candidate => candidate.cygni_emailaddress === email);
+        setCandidates(filteredCandidates);
+      } else {
+        console.error('Fetched candidates is not an array:', fetchedCandidates);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
-      Alert.alert('Error', 'Failed to fetch data. Please try again later.');
+      showModal('Error', 'Failed to fetch data. Please try again later.','Ok');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateAccount = async () => {
-    setLoading(true);
-    try {
-      const accessToken = await getToken(clientId, tenantId, clientSecret);
-      const newAccountData = {
-        name: newAccountName,
-        // Add other fields as needed
-      };
-      console.log('Creating account with data:', newAccountData);
-      const response = await createAccount(accessToken, newAccountData);
-      /*
-      if (response && response.data) {
-        await fetchData();
-        setNewAccountName('');
-        Alert.alert('Success', 'Account created successfully!');
-      } else {
-        throw new Error('Invalid response from createAccount');
-      }*/
-    } catch (error) {
-      console.error('Error creating account:', error);
-      Alert.alert('Error', 'This already exists!');
-    } finally {
-      setLoading(false);
-    }
+  const handleLogout = async () => {
+    // Navigate to the sign-in screen
+    await deleteToken();
+    handleAuthChange(false);
+      navigation.navigate('SignIn');
+   
   };
 
-  const renderItem = ({ item }) => (
-    <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc', padding: 10 }}>
-      <Text>{showAccounts ? item.name : item.fullname}</Text>
-    </View>
-  );
+  const onUpdatePressed = () => {
+    if (candidates.length > 0) {
+      navigation.navigate('ProfileDetails', { candidate: candidates[0] });
+    }
+  };
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
 
+  // Find the candidate with the email provided
+  const candidate = candidates.length > 0 ? candidates[0] : null;
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', margin: 90 }}>
-      <TextInput
-        style={{ height: 40, width: 200, borderColor: 'gray', borderWidth: 1, marginBottom: 10 }}
-        placeholder="New Account Name"
-        value={newAccountName}
-        onChangeText={setNewAccountName}
-      />
-      <Button
-        title="Create Account"
-        onPress={handleCreateAccount}
-      />
-      <Button
-        title={showAccounts ? "Show Contacts" : "Show Accounts"}
-        onPress={() => setShowAccounts(!showAccounts)}
-        style={{ marginTop: 20 }}
-      />
-      <FlatList
-        style={{ width: '100%' }}
-        data={showAccounts ? accounts : contacts}
-        renderItem={renderItem}
-        keyExtractor={(item) => showAccounts ? item.accountid : item.contactid}
-      />
-    </View>
+    <CandidateDetails candidate={candidate} onLogout={handleLogout} onUpdatePressed={onUpdatePressed} email={email} />
   );
 };
+
+const styles = StyleSheet.create({
+  centeredContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+});
 
 export default HomeScreen;

@@ -74,15 +74,21 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.loginregistercrm"
+    namespace "com.applicationtracking"
     defaultConfig {
-        applicationId "com.loginregistercrm"
+        applicationId "com.applicationtracking"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 11
+        versionName "2.0"
     }
     signingConfigs {
+             release {
+            keyAlias 'my-key-alias'
+            keyPassword 'Cygnisoft##12'
+            storeFile file('../../my-release-key.keystore')
+            storePassword 'Cygnisoft##12'
+        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -94,11 +100,12 @@ android {
         debug {
             signingConfig signingConfigs.debug
         }
+   
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
-            minifyEnabled enableProguardInReleaseBuilds
+            signingConfig signingConfigs.release
+            minifyEnabled true
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }

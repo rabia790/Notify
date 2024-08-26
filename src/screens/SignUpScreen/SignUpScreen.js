@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, Text, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, Text, TouchableOpacity, Alert, TextInput } from 'react-native';
 import LabeledInput from '../../components/LabeledInput';
 import LabeledRadioButton from '../../components/LabeledRadioButton';
 import CustomButton from '../../components/CustomButton';
-//import SocialSignInButtons from '../../components/SocialSignInButtons/SocialSignInButtons';
 import { useNavigation } from '@react-navigation/native';
+import CountrySelectorModal from '../../components/libraries/CountrySelectorModal';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { sendOTP, generateOTP } from '../../components/libraries/otp';
+import RegistrationForm from '../../components/libraries/RegistrationForm';
+import { useModal } from '../../components/libraries/ModalContext';
+import { checkEmailExists} from '../../api/dynamicsCRM';
+import { getToken } from '../../api/auth';
 
-
+const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
+const validatePhone = (phone) => /^\d{10}$/.test(String(phone));
 
 const SignUpScreen = () => {
     const [firstname, setFirstName] = useState('');
@@ -14,341 +21,248 @@ const SignUpScreen = () => {
     const [address, setAddress] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const [dob, setDob] = useState('');
-    const [auth, setAuth] = useState('');
+    const [auth, setAuth] = useState(true);
     const [workauth, setWorkAuth] = useState('');
-    const [condition, setCondition] = useState('');
-    const [usVisa, setUsVisa] = useState(null);
-    const [crime, setCrime] = useState(null);
-    const [lift, setLift] = useState(null);
-    const [azdz, setAzdz] = useState(null);
-    const [glicense, setGlicense] = useState(null);
-    const [shiftprefered, setShiftprefered] = useState(null);
+    //const [condition, setCondition] = useState('');
+    const [usVisa, setUsVisa] = useState(false);
+    const [crime, setCrime] = useState(false);
+    const [lift, setLift] = useState(true);
+    const [azdz, setAzdz] = useState(814740000);
+    const [glicense, setGlicense] = useState(true);
+    const [shiftprefered, setShiftprefered] = useState(814740000);
     const [additional, setAdditional] = useState(null);
-    const [password, setPassword] = useState('');
-    const [passwordRepeat, setPasswordRepeat] = useState('');
     const [firstnameError, setFirstNameError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [phoneError, setPhoneError] = useState('');
+    const [workAuthError, setWorkAuthError] = useState('');
     const [otp, setOtp] = useState('');
-    
+    const [selectedCountryCode, setSelectedCountryCode] = useState('+1');
+    const [modalVisible, setModalVisible] = useState(false);
+    const [dob, setDob] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const { showModal } = useModal();
 
-    
     const navigation = useNavigation();
 
-    const validateEmail = (email) => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(String(email).toLowerCase());
-      };
+    const onRegisterPressed = async () => {
+        let isValid = true;
 
-
-    const generateOTP = () => {
-        const digits = '0123456789';
-        let OTP = '';
-        for (let i = 0; i < 6; i++) {
-          OTP += digits[Math.floor(Math.random() * 10)];
-        }
-        return OTP;
-      };
-    const sendOTP = async () => {
-        const url = 'https://prod2-13.canadacentral.logic.azure.com:443/workflows/bbc50f34ed024e60af732c678668e5b5/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DJ7HuO9XkvU5SN5IzggZB4MoCI3bpsvxSRg1_h7zOmQ'; // Replace with the endpoint URL
-        const otp = generateOTP(); // Function to generate OTP
-      
-        try {
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ otp: otp, email: email }), // Include OTP and recipient email
-          });
-      
-          if (response.ok) {
-            console.log('OTP email sent successfully');
-            // Handle success - display a confirmation message to the user
-          } else {
-            console.log(response);
-            console.error('Failed to send OTP email');
-            // Handle failure - display an error message to the user
-          }
-        } catch (error) {
-          console.error('Error:', error);
-        }
-      };
-      
-
-
-    const onRegisterPressed = () => {
         if (!firstname) {
             setFirstNameError('First name is required');
-            return;
+            showModal({
+                heading: 'Error',
+                message: 'First name is required',
+            
+            });
+            isValid = false;
+        } else {
+            setFirstNameError('');
         }
-        setFirstNameError('');
-
-         if (!validateEmail(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
-      return;
-    }
-        console.warn("Registered!");
-        navigation.navigate('ConfirmEmail');
 
         if (!email) {
-            Alert.alert('Error', 'Please enter an email address');
+            setEmailError('Email is required');
+            showModal({
+                heading: 'Error',
+                message: 'Email is required',
+            
+            });
+            isValid = false;
+        } else if (!validateEmail(email)) {
+            setEmailError('Invalid email format');
+            isValid = false;
+        } else {
+            setEmailError('');
+        }
+
+        if (!phone) {
+            setPhoneError('Phone number is required');
+            showModal({
+                heading: 'Error',
+                message: 'Phone number is required',
+            
+            });
+            isValid = false;
+        } else if (!validatePhone(phone)) {
+            setPhoneError('Invalid phone number');
+            showModal({
+                heading: 'Error',
+                message: 'Invalid phone number',
+            
+            });
+            isValid = false;
+        } else {
+            setPhoneError('');
+        }
+
+        if (!workauth) {
+            setWorkAuthError('Work authorization is required');
+            showModal({
+                heading: 'Error',
+                message: 'Work authorization is required',
+            
+            });
+            isValid = false;
+        } else {
+            setWorkAuthError('');
+        }
+
+        if (!selectedCountryCode) {
+            Alert.alert('Error', 'Country is required');
+            isValid = false;
+        }
+
+        if (!isValid) {
             return;
-          }
-      
-          sendOTP(); 
-      
+        }
+
+        const clientId = 'e6af3ca0-2d80-4bec-9797-f20f3d63c17a'; 
+        const tenantId = 'c2883102-3f8d-4e6f-b65a-df3518b3b0f3';
+        const clientSecret = 'i3L8Q~1bfRsN8_5xVXLllm4z1TlNLdSHi3su9ady'; 
+
+        const accessToken = await getToken(clientId, tenantId, clientSecret);
+        const emailExists = await checkEmailExists(email, accessToken);
+        if (emailExists.length > 0) {
+            showModal({
+                heading: 'Error',
+                message: 'Email is already registered',
+            });
+            return;
+        }
+
+        const generatedOtp = generateOTP();
+        const otpSent = await sendOTP(generatedOtp, email, showModal);
+        console.log(generatedOtp);
+        console.log(otpSent);
+        if (otpSent) {
+            navigation.navigate('ConfirmEmail', {
+                firstname,
+                lastname,
+                address,
+                email,
+                phone: `${selectedCountryCode}${phone}`,
+                auth,
+                workauth,
+                usVisa,
+                crime,
+                lift,
+                azdz,
+                glicense,
+                shiftprefered,
+                additional,
+                otp: generatedOtp,
+                dob: dob.toDateString(),
+                source: 'register'
+            });
+        } else {
+            console.error('OTP could not be sent');
+        }
     };
 
-    const onTermsOfUsePressed = () => {
-        console.warn("Terms of Use!");
+    const showDatePickerHandler = () => setShowDatePicker(true);
+    const onDateChange = (event, selectedDate) => {
+        
+        if (event.type === 'set') {
+            console.log('Selected Date sign up:', selectedDate);
+            setDob(selectedDate || dob); // Set the dob state to the selected date
+            setShowDatePicker(false); // Hide the date picker after selection
+        } else if (event.type === 'dismissed') {
+            setShowDatePicker(false); // Hide the date picker if dismissed
+        }
     };
 
-    const onPrivacyPolicyPressed = () => {
-        console.warn("Privacy Policy!");
-    };
-
-    const onHaveAccountPressed = () => {
-        console.warn("Go To Sign IN!");
+    const onSignPressed = () => {
+        
         navigation.navigate('SignIn');
     };
+    const options = [
+        { label: 'Any', value: 814740000 },
+        { label: 'Day', value: 814740001 },
+        { label: 'Evening', value: 814740002 },
+        { label: 'Night', value: 814740003 }
+    ];
+    const optionsyesno = [
+        { label: 'Yes', value: 'true' },
+        { label: 'No', value: 'false' },
+        
+    ];
+    const optionsnoyes = [
+        { label: 'No', value: 'true' },
+        { label: 'Yes', value: 'false' },
+        
+    ];
+    const optionsazdz = [
+        { label: 'Yes', value: 814740000 },
+        { label: 'No', value: 814740001 },
+        { label: 'Applied', value: 814740002 },
+        
+    ];
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.root}>
-                <Text style={styles.title}>Register with US!</Text>
-
-                <LabeledInput
-                    label="First Name"
-                    placeholder="First Name"
-                    value={firstname}
-                    setValue={setFirstName}
-                />
-                {firstnameError ? <Text style={styles.errorText}>{firstnameError}</Text> : null}
-                <LabeledInput
-                    label="Last Name"
-                    placeholder="First Name"
-                    value={lastname}
-                    setValue={setLastName}
-                />
-
-                <LabeledInput
-                    label="Home Address"
-                    placeholder="Enter your Home Address"
-                    value={address}
-                    setValue={setAddress}
-                />
-
-                <LabeledInput
-                    label="Email"
-                    placeholder="Email"
-                    value={email}
-                    setValue={setEmail}
-                />
-
-                <LabeledInput
-                    label="Phone Number"
-                    placeholder="Enter your phone number"
-                    value={phone}
-                    setValue={setPhone}
-                />
-                <LabeledInput
-                    label="Date of Birth"
-                    placeholder="Enter your dob"
-                    value={dob}
-                    setValue={setDob}
-                />
-                <LabeledInput
-                    label="Authorized to work in Canada without sponsorship?"
-                    placeholder="your answer"
-                    value={auth}
-                    setValue={setAuth}
-                />
-                <LabeledInput
-                    label="Current work authorization"
-                    placeholder="your answer"
-                    value={workauth}
-                    setValue={setWorkAuth}
-                />
-                <LabeledInput
-                    label="Medical Condition"
-                    placeholder="your answer"
-                    value={condition}
-                    setValue={setCondition}
-                />
-
-                <Text style={styles.question}>Do you have a US visa?</Text>
-                <View style={styles.radioGroup}>
-                    <LabeledRadioButton
-                        label="Yes"
-                        selected={usVisa === 'yes'}
-                        onPress={() => setUsVisa('yes')}
-                    />
-                    <LabeledRadioButton
-                        label="No"
-                        selected={usVisa === 'no'}
-                        onPress={() => setUsVisa('no')}
-                    />
-                </View>
-
-                <Text style={styles.question}>Any Criminal Convictions?</Text>
-                <View style={styles.radioGroup}>
-                    <LabeledRadioButton
-                        label="Yes"
-                        selected={crime === 'yes'}
-                        onPress={() => setCrime('yes')}
-                    />
-                    <LabeledRadioButton
-                        label="No"
-                        selected={crime === 'no'}
-                        onPress={() => setCrime('no')}
-                    />
-                </View>
-
-                <Text style={styles.question}>Can you lift 25lbs?</Text>
-                <View style={styles.radioGroup}>
-                    <LabeledRadioButton
-                        label="Yes"
-                        selected={lift === 'yes'}
-                        onPress={() => setLift('yes')}
-                    />
-                    <LabeledRadioButton
-                        label="No"
-                        selected={lift === 'no'}
-                        onPress={() => setLift('no')}
-                    />
-                </View>
-
-                <Text style={styles.question}>DZ or AZ license</Text>
-                <View style={styles.radioGroup}>
-                    <LabeledRadioButton
-                        label="Yes"
-                        selected={azdz === 'yes'}
-                        onPress={() => setAzdz('yes')}
-                    />
-                    <LabeledRadioButton
-                        label="No"
-                        selected={azdz === 'no'}
-                        onPress={() => setAzdz('no')}
-                    />
-                    <LabeledRadioButton
-                        label="Applied"
-                        selected={azdz === 'applied'}
-                        onPress={() => setAzdz('applied')}
-                    />
-                </View>
-
-                <Text style={styles.question}>G License</Text>
-                <View style={styles.radioGroup}>
-                    <LabeledRadioButton
-                        label="Yes"
-                        selected={glicense === 'yes'}
-                        onPress={() => setGlicense('yes')}
-                    />
-                    <LabeledRadioButton
-                        label="No"
-                        selected={glicense === 'no'}
-                        onPress={() => setGlicense('no')}
-                    />
-                    
-                </View>
-
-                <Text style={styles.question}>Shift preferred?</Text>
-                <View style={styles.radioGroup}>
-                    <LabeledRadioButton
-                        label="Any"
-                        selected={shiftprefered === 'any'}
-                        onPress={() => setShiftprefered('any')}
-                    />
-                    <LabeledRadioButton
-                        label="day"
-                        selected={shiftprefered === 'day'}
-                        onPress={() => setShiftprefered('day')}
-                    />
-                     <LabeledRadioButton
-                        label="Evening"
-                        selected={shiftprefered === 'evening'}
-                        onPress={() => setShiftprefered('evening')}
-                    />
-                    <LabeledRadioButton
-                        label="Night"
-                        selected={shiftprefered === 'night'}
-                        onPress={() => setShiftprefered('night')}
-                    />
-                    
-                </View>
-
-                <LabeledInput
-                    label="Additional Notes"
-                    placeholder="your answer"
-                    value={additional}
-                    setValue={setAdditional}
-                />
-
-                <LabeledInput
-                    label="Password"
-                    placeholder="Password"
-                    value={password}
-                    setValue={setPassword}
-                    secureTextEntry={true}
-                />
-                <LabeledInput
-                    label="Confirm Password"
-                    placeholder="Confirm Password"
-                    value={passwordRepeat}
-                    setValue={setPasswordRepeat}
-                    secureTextEntry={true}
-                />
-
-                <CustomButton text="Register" onPress={onRegisterPressed} />
-                
-                <Text style={styles.text}>
-                    By registering, you confirm that you accept our {' '}
-                    <Text style={styles.link} onPress={onTermsOfUsePressed}>Terms of Use</Text> and <Text style={styles.link} onPress={onPrivacyPolicyPressed}>Privacy Policy</Text>.
-                </Text>
-
-                <CustomButton text="Have an Account? Sign In" onPress={onHaveAccountPressed} type="TERTIARY" />
-            </View>
-        </ScrollView>
+        <View style={styles.root}>
+       
+        <View style={styles.spacer} />
+        <RegistrationForm
+            firstname={firstname}
+            setFirstName={setFirstName}
+            lastname={lastname}
+            setLastName={setLastName}
+            address={address}
+            setAddress={setAddress}
+            email={email}
+            setEmail={setEmail}
+            phone={phone}
+            setPhone={setPhone}
+            dob={dob}
+            setDob={setDob}
+            auth={auth}
+            setAuth={setAuth}
+            workauth={workauth}
+            setWorkAuth={setWorkAuth}
+            usVisa={usVisa}
+            setUsVisa={setUsVisa}
+            crime={crime}
+            setCrime={setCrime}
+            lift={lift}
+            setLift={setLift}
+            azdz={azdz}
+            setAzdz={setAzdz}
+            glicense={glicense}
+            setGlicense={setGlicense}
+            shiftprefered={shiftprefered}
+            setShiftprefered={setShiftprefered}
+            additional={additional}
+            setAdditional={setAdditional}
+            firstnameError={firstnameError}
+            emailError={emailError}
+            phoneError={phoneError}
+            workAuthError={workAuthError}
+            selectedCountryCode={selectedCountryCode}
+            setSelectedCountryCode={setSelectedCountryCode}
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            showDatePicker={showDatePicker}
+            setShowDatePicker={setShowDatePicker}
+            onDateChange={onDateChange}
+            onRegisterPressed={onRegisterPressed}
+            showDatePickerHandler={showDatePickerHandler}
+            onSignPressed={onSignPressed}
+            options={options}
+            optionsyesno={optionsyesno}
+            optionsnoyes={optionsnoyes}
+            optionsazdz={optionsazdz}
+        />
+    </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     root: {
         flex: 1,
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        padding: 20,
+        backgroundColor: '#f8f8f8',
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#051C60',
-        margin: 10,
+    spacer: {
+        height: 0,
     },
-    text: {
-        color: 'gray',
-        marginVertical: 10,
-    },
-    link: {
-        color: "orange",
-    },
-    errorText: {
-        color: 'red',
-        marginVertical: 5,
-    },
-    question: {
-        fontSize: 16,
-        color: 'black',
-        fontWeight: '600',
-        marginVertical: 10,
-    },
-    radioGroup: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
-        marginVertical: 10,
-    },
-
 });
 
 export default SignUpScreen;
