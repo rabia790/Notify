@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Animated, Easing, Alert, Linking } from 'react-native';
+import { useModal } from './ModalContext';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from './AuthContext';
 
-const SlidingMenu = ({ visible, onClose }) => {
+
+const SlidingMenu = ({ visible, onClose, candidate = null }) => {
+    const { showModal } = useModal();
+    const navigation = useNavigation();
+    const { isAuthenticated } = useAuth(); 
+
+
     const [scaleAnim] = useState(new Animated.Value(0)); // Initial scale
     const [translateXAnim] = useState(new Animated.Value(300)); // Initial X position (off-screen to the right)
     const [translateYAnim] = useState(new Animated.Value(-300)); // Initial Y position (off-screen to the top)
@@ -67,6 +76,10 @@ const SlidingMenu = ({ visible, onClose }) => {
         }
     };
 
+ 
+
+
+
     return (
         <Modal
             transparent={true}
@@ -96,10 +109,16 @@ const SlidingMenu = ({ visible, onClose }) => {
                            >
                             <Text style={styles.menuText}>FAQ</Text>
                         </TouchableOpacity>
+
+                      
+
+                        {isAuthenticated && (
                         <TouchableOpacity style={styles.menuItem} onPress={() => handleOpenURL('https://www.cygnisoft.com/work-attire')}
                        >
                             <Text style={styles.menuText}>WORK ATTIRE</Text>
                         </TouchableOpacity>
+                         )}
+
                         <TouchableOpacity style={styles.menuItem} onPress={() => handleOpenURL('https://www.cygnisoft.com')}
                       >
                             <Text style={styles.menuText}>CONTACT US</Text>
@@ -112,12 +131,9 @@ const SlidingMenu = ({ visible, onClose }) => {
                            >
                             <Text style={styles.menuText}>PRIVACY POLICY</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.menuItem} onPress={() => handleOpenURL('https://www.cygnisoft.com/deletion')}
-                           >
-                            <Text style={styles.menuText}>DELETE ACCOUNT</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.menuItem}>
-                            <Text style={styles.menuText}>VERSION NUMBER {'\n'}Cygni_1.0.0</Text>
+                       
+                        <TouchableOpacity style={styles.menuItem} onPress={() => handleOpenURL('https://www.cygnisoft.com/ios')}>
+                            <Text style={styles.menuText}>VERSION NUMBER {'\n'}Cygni_1.2.1</Text>
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
@@ -148,6 +164,7 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         alignSelf: 'flex-end',
+        marginTop:20,
         marginBottom: 20,
         width: 48, height: 48, justifyContent: 'center', alignItems: 'center',
     },

@@ -7,6 +7,8 @@ import { getToken } from '../../api/auth';
 import { sendOTP, generateOTP } from '../../components/libraries/otp';
 import Lock from '../../../assets/images/lock_icon.png';
 import { useModal } from '../../components/libraries/ModalContext';
+import { useRoute } from '@react-navigation/native';
+import { checkEmailExistsEmployee } from '../../api/EmployeeCRM';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,32 +21,40 @@ const ForgotPasswordScreen = () => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const { showModal } = useModal();
-
+  const route = useRoute();
+  const userType = route.params?.userType || null; 
 
 
   const onSendPressed = async () => {
-    if (!email.trim()) {
-      showModal({
-        heading: 'Error',
-        message: 'Please enter your email address.',
-    
-    });
-      return;
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail ) {
+        showModal({
+            heading: 'Error',
+            message: !normalizedEmail ? 'Email is required' : 'Password is required',
+        });
+        return;
     }
+
     setLoading(true);
     try {
       const accessToken = await getToken(clientId, tenantId, clientSecret);
-      const exists = await checkEmailExists(email, accessToken);
+      let exists;
+      if (userType === 'employee') {
+        exists = await checkEmailExistsEmployee(normalizedEmail, accessToken);
+      } else {
+        exists = await checkEmailExists(normalizedEmail, accessToken);
+      }
       if (exists  && Object.keys(exists).length > 0) {
         const generatedOtp = generateOTP();
-        const otpSent = await sendOTP(generatedOtp, email, showModal);
+        const otpSent = await sendOTP(generatedOtp, normalizedEmail, showModal);
         console.log(generatedOtp);
         console.log(otpSent);
         if (otpSent) {
           navigation.navigate('ConfirmEmail', {
-            email,
+            email: normalizedEmail,
             otp: generatedOtp, 
-            source: 'forgotPassword'
+            source: 'forgotPassword',
+            userType, 
           });
         } else {
           console.error('OTP could not be sent');
@@ -53,7 +63,6 @@ const ForgotPasswordScreen = () => {
         showModal({
           heading: 'Error',
           message: 'Email does not exist in the database.',
-      
       });
       }
     } catch (error) {
@@ -61,14 +70,21 @@ const ForgotPasswordScreen = () => {
       showModal({
         heading: 'Error',
         message: 'An error occurred while checking the email. Please try again.',
-    
-    });    } finally {
+    }); 
+     } finally {
       setLoading(false);
     }
   };
 
   const onHaveAccountPressed = () => {
-    navigation.navigate('SignIn');
+    if (userType === 'candidate') {
+      navigation.navigate('SignIn');
+    } else if (userType === 'employee') {
+      navigation.navigate('EmployeeSignIn');
+    } else {
+      // Handle other user types or show an error
+      console.log('Unknown user type');
+    }
   };
 
   const scaleFontSize = (size) => {

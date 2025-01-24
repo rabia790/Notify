@@ -31,11 +31,10 @@ const useFetchCandidateProfile = (email) => {
 
         // Fetch candidate profile data
         const profileData = await getCandidateProfile(accessToken, email);
-
         // Check if the response is an array and has data
         if (Array.isArray(profileData) && profileData.length > 0) {
           const profilePicUri = profileData[0].cygni_profile; // Adjust if needed based on actual response structure
-         
+
           setProfilePicture(profilePicUri ? { uri: profilePicUri } : require('../../assets/images/profile.png'));
         
           const statusNumber = profileData[0].cygni_stage; // Adjust field name if necessary

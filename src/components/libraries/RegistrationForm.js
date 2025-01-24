@@ -9,24 +9,25 @@ import DateTimePicker from '@react-native-community/datetimepicker'; // Adjust i
 import HeaderWithBackButton from '../HeaderWithBackButton';
     import BooleanCustomInput from './BooleanCustomInput';
 
+
 const RegistrationForm = ({
     firstname,
     setFirstName,
     lastname,
     setLastName,
-    address,
-    setAddress,
+    /*address,
+    setAddress,*/
     email,
     setEmail,
     phone,
     setPhone,
-    dob,
-    setDob,
+   /* dob,
+    setDob,*/
     auth,
     setAuth,
     workauth,
     setWorkAuth,
-    usVisa,
+    /*usVisa,
     setUsVisa,
     crime,
     setCrime,
@@ -39,7 +40,7 @@ const RegistrationForm = ({
     shiftprefered,
     setShiftprefered,
     additional,
-    setAdditional,
+    setAdditional,*/
     firstnameError,
     emailError,
     phoneError,
@@ -48,16 +49,16 @@ const RegistrationForm = ({
     setSelectedCountryCode,
     modalVisible,
     setModalVisible,
-    showDatePicker,
+    /*showDatePicker,
     setShowDatePicker,
-    onDateChange,
+    onDateChange,*/
     onRegisterPressed,
-    showDatePickerHandler,
+    //showDatePickerHandler,
     onSignPressed,
-    options,
+    /*options,
     optionsyesno,
     optionsnoyes,
-    optionsazdz
+    optionsazdz*/
 }) => {
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -66,39 +67,42 @@ const RegistrationForm = ({
             <View style={styles.spacer} />
             <View style={styles.contentContainer}>
                 <Text style={styles.title}>Create your job profile</Text>
-                <CustomButton text="Already registered, login here" 
-                onPress={onSignPressed} 
+                <CustomButton text="Already registered, login here"
+                onPress={onSignPressed}
                 type="TERTIARY" />
                <CustomInput
-                
+               
                 placeholder="Enter your first name"
                 value={firstname}
                 setValue={setFirstName}
-          
+         
             />
             {firstnameError ? <Text style={styles.errorText} accessibilityLiveRegion="polite">{firstnameError}</Text> : null}
+
 
             <CustomInput
                 placeholder="Enter your last name"
                 value={lastname}
                 setValue={setLastName}
-          
+         
             />
 
-            <CustomInput
+
+          { /* <CustomInput
                 placeholder="Enter your home address"
                 value={address}
                 setValue={setAddress}
-          
+         
             />
-
+*/}
             <CustomInput
                 placeholder="Enter your email address"
                 value={email}
                 setValue={setEmail}
-        
+       
             />
                 {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
 
                 <View style={styles.phoneContainer}>
                     <View style={styles.phoneInputContainer}>
@@ -117,13 +121,14 @@ const RegistrationForm = ({
                     {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
                 </View>
 
+
                 <CountrySelectorModal
                     visible={modalVisible}
                     onClose={() => setModalVisible(false)}
                     onSelect={(countryCode) => setSelectedCountryCode(countryCode)}
                     selectedCountryCode={selectedCountryCode}
                 />
-                <Text style={styles.textstyle}> Date of Birth</Text>
+               { /* <Text style={styles.textstyle}> Date of Birth</Text>
                 <TouchableOpacity onPress={showDatePickerHandler} style={styles.datePicker}accessibilityLabel="Select Date of Birth"
                 accessibilityHint="Opens a date picker to select your date of birth">
                 <Text style={styles.datePickerText}>{dob ? dob.toDateString() : 'Select Date'}</Text>
@@ -139,6 +144,7 @@ const RegistrationForm = ({
                     />
                 )}
 
+
                 <BooleanCustomInput
                         label="Authorized to work in Canada without sponsorship?"
                         value={auth}
@@ -147,7 +153,7 @@ const RegistrationForm = ({
                        accessibilityLabel="Select if you are authorized to work in Canada without sponsorship"
                        accessibilityHint="Double-tap to select if you are authorized to work in Canada without sponsorship"
                     />  
-
+*/}
                 <LabeledInput
                     label="Current Work Authorization?"
                     placeholder="Your answer"
@@ -155,9 +161,10 @@ const RegistrationForm = ({
                     setValue={setWorkAuth}
                 />
                 {workAuthError ? <Text style={styles.errorText}>{workAuthError}</Text> : null}
-                
+               
 
-                <BooleanCustomInput
+
+                { /*    <BooleanCustomInput
                         label="Do you have a US visa?"
                         value={usVisa}
                         setValue={setUsVisa}
@@ -166,6 +173,7 @@ const RegistrationForm = ({
     accessibilityHint="Double-tap to choose Yes or No"
                     />  
 
+
                 <BooleanCustomInput
                         label="Any Criminal Convictions?"
                         value={crime}
@@ -173,9 +181,10 @@ const RegistrationForm = ({
                         options={optionsnoyes}
                          accessibilityLabel="Select if you have any Criminal Convictions"
     accessibilityHint="Double-tap to choose Yes or No"
-                        
-                    />   
-            
+                       
+                    />  
+           
+
 
                 <BooleanCustomInput
                         label="Can you lift 25lbs?"
@@ -193,7 +202,8 @@ const RegistrationForm = ({
                         options={optionsazdz}
                          accessibilityLabel="Select if you have a DZ or AZ license"
     accessibilityHint="Double-tap to choose Yes or No"
-                    /> 
+                    />
+
 
                 <BooleanCustomInput
                         label="G license"
@@ -202,7 +212,8 @@ const RegistrationForm = ({
                         options={optionsyesno}
                           accessibilityLabel="Select if you have G license"
     accessibilityHint="Double-tap to choose Yes or No"
-                    /> 
+                    />
+
 
                     <BooleanCustomInput
                         label="Preferred Shift?"
@@ -211,7 +222,9 @@ const RegistrationForm = ({
                         options={options}
                         accessibilityLabel="Select your preferred shift"
     accessibilityHint="Double-tap to choose your preferred shift"
-                    /> 
+                    />
+
+
 
 
                 <LabeledInput
@@ -221,7 +234,8 @@ const RegistrationForm = ({
                     setValue={setAdditional}
                     accessibilityLabel="Additional Information"
     accessibilityHint="Double-tap to enter any additional information"
-                />
+                />*/}
+
 
                 <CustomButton
                     text="Sign Up"
@@ -232,6 +246,7 @@ const RegistrationForm = ({
     </ScrollView>
     );
 };
+
 
 const styles = StyleSheet.create({
     root: {
@@ -246,6 +261,7 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#1E1E20',
         borderTopLeftRadius:200,
+        height: 1000,
     },
         title: {
             marginBottom: 5,
@@ -253,8 +269,8 @@ const styles = StyleSheet.create({
             fontSize:34,
             color:'#FFFFFF',
             textAlign: 'center',
-            paddingTop:20,
-        
+            paddingTop:50,
+       
         },
     errorText: {
          color: '#811111',
@@ -271,9 +287,9 @@ const styles = StyleSheet.create({
     countrySelector: {
         padding: 15,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#B1662F',
         borderRadius: 5,
-        backgroundColor: '#fff',
+        backgroundColor: '#B1662F',
     },
     countryText: {
         color:'black',
@@ -303,12 +319,12 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         justifyContent: 'center',
         backgroundColor:'#ffff',
-    
+   
     },
     datePickerText: {
         fontSize: 16,
       color: '#000000'
-        
+       
     },
     label: {
         fontFamily:'Montserrat-Bold',
@@ -328,4 +344,10 @@ const styles = StyleSheet.create({
     },
 });
 
+
 export default RegistrationForm;
+
+
+
+
+

@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import SlidingMenu from '../libraries/SlidingMenu';
 
-const HeaderWithoutBackButton = () => {
+const HeaderWithoutBackButton = ({ showTitle, title }) => {
     const [isMenuVisible, setMenuVisible] = useState(false);
 
     const toggleMenu = () => {
@@ -25,6 +25,13 @@ const HeaderWithoutBackButton = () => {
                 </View>
             </TouchableOpacity>
             <SlidingMenu visible={isMenuVisible} onClose={() => setMenuVisible(false)} />
+
+            {showTitle && (
+                <View style={styles.titleContainer}>
+                    <Text style={styles.titleText}>{title}</Text>
+                </View>
+            )}
+
         </View>
     );
 };
@@ -71,6 +78,18 @@ const styles = StyleSheet.create({
         height: 4, // Thickness of each line
         width: 35, // Length of each line
         marginVertical: 5,
+    },
+    titleContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 50,
+        alignItems: 'center',
+    },
+    titleText: {
+        fontFamily: 'Montserrat-Bold',
+        fontSize: 20,
+        color: '#000',
     },
 });
 

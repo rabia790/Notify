@@ -33,7 +33,8 @@ const ConfirmEmailScreen = () => {
         glicense = '',
         shiftprefered = '',
         additional = '',
-        source = ''
+        source = '',
+        userType = '',
     } = params;
 
 
@@ -69,7 +70,7 @@ const ConfirmEmailScreen = () => {
                 navigation.navigate('NewPassword', {
                     firstname, lastname, address, email, phone, dob,
                     auth, workauth, usVisa, crime, lift,
-                    azdz, glicense, shiftprefered, additional, source
+                    azdz, glicense, shiftprefered, additional, source,  userType,
                 });
             } else {
                 showModal({
@@ -81,10 +82,17 @@ const ConfirmEmailScreen = () => {
         }
     };
 
-    const onHaveAccountPressed = () => {
-        navigation.navigate('SignIn');
-    };
 
+    const onHaveAccountPressed = () => {
+        if (userType === 'candidate') {
+          navigation.navigate('SignIn');
+        } else if (userType === 'employee') {
+          navigation.navigate('EmployeeSignIn');
+        } else {
+          // Handle other user types or show an error
+          console.log('Unknown user type');
+        }
+      };
     const onResendPressed = async () => {
         setLoading(true);
         const generatedOtp = generateOTP(); // Generate OTP here

@@ -1,32 +1,47 @@
 import React from 'react';
-import { StyleSheet, SafeAreaView, View } from 'react-native';
+import { Text, StyleSheet, SafeAreaView, NativeModules } from 'react-native';
 import { AuthProvider } from './src/components/libraries/AuthContext';
 import { ModalProvider } from './src/components/libraries/ModalContext';
+
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Navigation from './src/components/navigation';
-
-
+console.log("Available Native Modules:", NativeModules);
 export default function App() {
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.root}>
-      <AuthProvider>
-      <ModalProvider>
-      <Navigation />
-      </ModalProvider>
-    </AuthProvider>
-      </View>
-    </SafeAreaView>
-  );
+return (
+<GestureHandlerRootView style={styles.root}>
+<SafeAreaView style={styles.safeArea}>
+<AuthProvider>
+<ModalProvider>
+<Navigation/>
+</ModalProvider>
+</AuthProvider>
+</SafeAreaView>
+</GestureHandlerRootView>
+);
 }
 
+
+
+
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backfaceVisibility:"white",
-  },
-  root: {
-   
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
+safeArea: {
+flex: 1,
+backgroundColor: '#FFF', // Updated from 'backfaceVisibility' to 'backgroundColor'
+},
+root: {
+flex: 1,
+},
 });
+
+
+
+
+
+
+
+
+
+
+
+
+

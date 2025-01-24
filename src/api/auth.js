@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const clientId = 'e6af3ca0-2d80-4bec-9797-f20f3d63c17a'; // Application (client) ID
 const tenantId = 'c2883102-3f8d-4e6f-b65a-df3518b3b0f3'; // Directory (tenant) ID
-const clientSecret = 'i3L8Q~1bfRsN8_5xVXLllm4z1TlNLdSHi3su9ady'; // Client Secret for your Azure AD app
+const clientSecret = 'azN8Q~gLRp22DUiGq872~bb1wCYH4AzhX_Ezwaic'; // Client Secret for your Azure AD app
 const crmResourceId = 'https://cygnisoft.crm3.dynamics.com/'; // Resource ID for Dynamics CRM API
 
 
@@ -29,7 +29,7 @@ const getToken = async () => {
 
     const accessToken = response.data.access_token;
    
-    console.log(accessToken);
+   
     return accessToken;
   
   } catch (error) {

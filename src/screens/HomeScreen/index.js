@@ -9,14 +9,17 @@ import { useAuth } from '../../components/libraries/AuthContext';
 import { useModal } from '../../components/libraries/ModalContext';
 
 
+
+
 const HomeScreen = ({ clientId, tenantId, clientSecret }) => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState(null); // Use state to store email
   const route = useRoute();
-  const navigation = useNavigation(); 
+  const navigation = useNavigation();
   const { handleAuthChange } = useAuth();
   const { showModal } = useModal();
+
 
  
   // Fetch email from storage
@@ -34,9 +37,11 @@ const HomeScreen = ({ clientId, tenantId, clientSecret }) => {
     }
   };
 
+
   useEffect(() => {
     // Check if email is coming from route parameters
     const { email: routeEmail } = route.params || {};
+
 
     if (routeEmail) {
       // If email is provided in route params, use it
@@ -48,13 +53,13 @@ const HomeScreen = ({ clientId, tenantId, clientSecret }) => {
     }
   }, [route.params]);
 
+
   const fetchData = async (email) => {
     setLoading(true);
     try {
       const accessToken = await getToken(clientId, tenantId, clientSecret);
       const response = await fetchAllCandidates(accessToken);
-      const fetchedCandidates = response.value; // Adjust if your response is different
-
+      const fetchedCandidates = response.value || [];
       if (Array.isArray(fetchedCandidates)) {
         // Filter candidates based on the email
         const filteredCandidates = fetchedCandidates.filter(candidate => candidate.cygni_emailaddress === email);
@@ -70,6 +75,7 @@ const HomeScreen = ({ clientId, tenantId, clientSecret }) => {
     }
   };
 
+
   const handleLogout = async () => {
     // Navigate to the sign-in screen
     await deleteToken();
@@ -78,11 +84,29 @@ const HomeScreen = ({ clientId, tenantId, clientSecret }) => {
    
   };
 
+
   const onUpdatePressed = () => {
     if (candidates.length > 0) {
       navigation.navigate('ProfileDetails', { candidate: candidates[0] });
     }
   };
+
+
+  const onCurrentOPressed = () => {
+    if (candidates.length > 0) {
+      navigation.navigate('CurrentOpeningsAL', { candidate: candidates[0] });
+    }
+  };
+
+
+  const handleMyJobs = () => {
+    if (candidates.length > 0) {
+      navigation.navigate('MyJobs', { candidate: candidates[0] });
+    }
+  };
+  handleMyJobs
+ 
+
 
   if (loading) {
     return (
@@ -92,21 +116,30 @@ const HomeScreen = ({ clientId, tenantId, clientSecret }) => {
     );
   }
 
+
   // Find the candidate with the email provided
   const candidate = candidates.length > 0 ? candidates[0] : null;
 
+
   return (
-    <CandidateDetails candidate={candidate} onLogout={handleLogout} onUpdatePressed={onUpdatePressed} email={email} />
+    <CandidateDetails candidate={candidate} onLogout={handleLogout} onUpdatePressed={onUpdatePressed} onCurrentOPressed={onCurrentOPressed} handleMyJobs={handleMyJobs} email={email} />
   );
 };
+
 
 const styles = StyleSheet.create({
   centeredContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#1E1E20',
   },
 });
 
+
 export default HomeScreen;
+
+
+
+
+

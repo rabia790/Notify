@@ -4,13 +4,14 @@ import Logo from '../../../assets/images/unnamed.png';
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useNavigation } from '@react-navigation/native';
-import { fetchAllCandidates, fetchAllActiveCandidates } from '../../api/dynamicsCRM';
+import { fetchAllActiveCandidates } from '../../api/dynamicsCRM';
 import { getToken } from '../../api/auth';
 import { storeToken } from '../../api/tokenManager';
 import { storeUserInfo } from '../../api/tokenManager';
 import { useAuth } from '../../components/libraries/AuthContext';
 import { useModal } from '../../components/libraries/ModalContext';
-
+import { useRoute } from '@react-navigation/native';
+import { Platform } from 'react-native';
 
 const SignInScreen = ({ clientId, tenantId, clientSecret }) => {
     const [email, setEmail] = useState('');
@@ -20,8 +21,9 @@ const SignInScreen = ({ clientId, tenantId, clientSecret }) => {
     const navigation = useNavigation();
     const { handleAuthChange } = useAuth();
     const { showModal } = useModal();
+    const route = useRoute();
+    const userType = route.params?.userType || null; 
 
-   
     const scaleFontSize = (size) => {
         const baseWidth = 375; // Base width for scaling
         return (size / baseWidth) * width;
@@ -31,11 +33,19 @@ const SignInScreen = ({ clientId, tenantId, clientSecret }) => {
         setSecureTextEntry(!secureTextEntry);
       };
     
-
-    
-
+      
 
     const onSignInPressed = async () => {
+        
+        const normalizedEmail = email.trim().toLowerCase();
+        if (!normalizedEmail || !password) {
+            showModal({
+                heading: 'Error',
+                message: !normalizedEmail ? 'Email is required' : 'Password is required',
+            });
+            return;
+        }
+    
         try {
             // Retrieve the access token
             const accessToken = await getToken(clientId, tenantId, clientSecret);
@@ -43,11 +53,11 @@ const SignInScreen = ({ clientId, tenantId, clientSecret }) => {
             const response = await fetchAllActiveCandidates(accessToken);
            // console.log('API Response:', response);
             const candidates = response;
-            
+           
             //console.log('Active Candidates:', candidates);
     
             // Find the user with the provided email and password
-            const user = candidates.find(candidate => candidate.cygni_emailaddress === email );
+            const user = candidates.find(candidate => candidate.cygni_emailaddress === normalizedEmail );
     
             // Navigate to HomeScreen if the user is found, else show an error alert
             if (user) {
@@ -55,7 +65,6 @@ const SignInScreen = ({ clientId, tenantId, clientSecret }) => {
                     await storeToken(accessToken);
                     await storeUserInfo(user);
                     handleAuthChange(true);
-                   
                     navigation.navigate('HomeScreen', { email: user.cygni_emailaddress, userDetails: user });
                 } else {
                     showModal({
@@ -84,7 +93,7 @@ const SignInScreen = ({ clientId, tenantId, clientSecret }) => {
 
     const onForgotPasswordPressed = () => {
         
-        navigation.navigate('ForgotPassword');
+        navigation.navigate('ForgotPassword', { userType });
     };
 
     const onCreatePressed = () => {
@@ -98,7 +107,7 @@ const SignInScreen = ({ clientId, tenantId, clientSecret }) => {
                 <View style={styles.container}>
                     <Image source={Logo} style={[styles.logo, { height: height * 0.2 }]} resizeMode="contain" />
                     <Text style={[styles.logotext, { fontSize: scaleFontSize(18) }]}>Applicant Tracking System </Text>
-                    <Text style={[styles.logintext, { fontSize: scaleFontSize(42) }]}>Login</Text>
+                    <Text style={[styles.logintext, { fontSize: scaleFontSize(42) }]}>Candidate Login</Text>
                     <Text style={[styles.plaintext, { fontSize: scaleFontSize(18) }]}>Sign In to Continue.</Text>
                     <CustomInput placeholder="Email"  value={email} setValue={setEmail} />
 
@@ -156,7 +165,7 @@ const styles = StyleSheet.create({
    
     },
     logintext: {
-       
+       padding:12,
         fontFamily: 'Montserrat-Bold', 
         color: '#F5802C', 
         fontWeight: 'bold',

@@ -34,10 +34,9 @@ const CustomInput = ({value, setValue, placeholder, secureTextEntry,  rightIcon,
 
 const styles = StyleSheet.create({
     container: {
-      
-     
       fontSize: 16, 
       color: '#000', 
+      alignItems:'center',
     },
     input: {
       backgroundColor: 'white',

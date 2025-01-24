@@ -13,7 +13,7 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.splash_screen);
 
         // Duration of splash screen
-        int SPLASH_DISPLAY_LENGTH = 2000;
+        int SPLASH_DISPLAY_LENGTH = 1600;
 
         // Redirect to MainActivity after a delay
         new Handler().postDelayed(new Runnable(){

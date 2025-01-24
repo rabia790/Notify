@@ -10,25 +10,32 @@ import NoDataMessage from '../libraries/NoDataMessage';
 import useFetchCandidateProfile from '../../hooks/useFetchProfile';
 import { useModal } from '../libraries/ModalContext';
 import { uploadImageToSharePoint } from '../../api/sharepoint';
+import ProfileButtonGridCan from '../Candidates/ProfileButtonGridCan';
+
 
 const defaultProfilePicture = require('../../../assets/images/profile.png');
 
+
 const { width, height } = Dimensions.get('window');
+
 
 const clientId = 'e6af3ca0-2d80-4bec-9797-f20f3d63c17a';
 const tenantId = 'c2883102-3f8d-4e6f-b65a-df3518b3b0f3';
 const clientSecret = 'i3L8Q~1bfRsN8_5xVXLllm4z1TlNLdSHi3su9ady';
 
-const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
-  
-    const navigation = useNavigation(); 
+
+const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, onCurrentOPressed, handleMyJobs, email}) => {
+ 
+    const navigation = useNavigation();
     const { showModal } = useModal();
 
+
     const { profilePicture: fetchedProfilePicture, status, loading, error } = useFetchCandidateProfile(email);
-    
+
 
     // Initialize the profile picture state
     const [profilePicture, setProfilePicture] = useState(defaultProfilePicture);
+
 
     useEffect(() => {
       if (fetchedProfilePicture) {
@@ -37,24 +44,28 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
     }, [fetchedProfilePicture]);
 
 
+
+
     const contactPressed = () => {
-      navigation.navigate('Contact');
+      navigation.navigate('Latest Updates');
     };
-  
+ 
     if (loading) {
       return <Text>Loading...</Text>;
     }
-  
+ 
     if (error) {
       return <Text>Error: {error}</Text>;
     }
-  
-    
+ 
+   
 
-    
+
+   
   if (!candidate) {
     return <NoDataMessage message="No candidates available for this email" />;
   }
+
 
   const handleImagePicker = () => {
     showModal({
@@ -64,9 +75,10 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
       onPrimaryButtonPress: openCamera,
       secondaryButtonText: 'Gallery',
       onSecondaryButtonPress: openGallery,
-  
+ 
     });
   };
+
 
   const openCamera = () => {
     const options = { mediaType: 'photo', quality: 1 };
@@ -78,7 +90,7 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
         showModal({
           heading: 'Error',
           message: 'Failed to open camera. Please try again.'
-      
+     
         });
       } else {
         const { uri } = response.assets[0];
@@ -87,6 +99,7 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
       }
     });
   };
+
 
   const openGallery = () => {
     const options = { mediaType: 'photo', quality: 1 };
@@ -98,7 +111,7 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
         showModal({
           heading: 'Error',
           message: 'Failed to open gallery. Please try again.'
-      
+     
         });
       } else {
         const { uri } = response.assets[0];
@@ -108,7 +121,9 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
     });
   };
 
+
   const updateProfilePictureInCRM = async (uri) => {
+
 
     const accessToken = await getToken(clientId, tenantId, clientSecret);
     updateProfilePictureURL(accessToken, candidate.cygni_emailaddress)
@@ -116,7 +131,7 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
         showModal({
           heading: 'Success',
           message: 'Profile picture updated successfully.'
-      
+     
         });
       })
       .catch((error) => {
@@ -124,7 +139,7 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
         showModal({
           heading: 'Error',
           message: 'Failed to update profile picture. Please try again.'
-      
+     
         });
       });
   };
@@ -133,52 +148,84 @@ const CandidateDetails = ({ candidate, onLogout, onUpdatePressed, email }) => {
 
 
 
+
+
+
+
+
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
       <View style={styles.root}>
         <HeaderWithoutBackButton />
         <View style={styles.spacer} />
         <View style={styles.contentContainer}>
           <View style={styles.header}>
             <Text style={styles.headerText}>My Cygni</Text>
+              {/*
             <View style={styles.profileContainer}>
+             
               <TouchableOpacity onPress={handleImagePicker}>
               <Image
                   source={profilePicture}
                   style={styles.profilePicture}
                   onError={() => setProfilePicture(defaultProfilePicture)}
                   resizeMode="cover"
-                  accessibilityLabel="Profile picture" 
+                  accessibilityLabel="Profile picture"
                 />
               </TouchableOpacity>
-          
+         
             </View>
-           
+             */}
           </View>
-        
+       
           <View style={styles.detailBloc}>
-  <Text style={styles.detailText}>{status}</Text>
+  <Text style={styles.detailText}>Registered</Text>
 </View>
          
+
+
+          <ProfileButtonGridCan
+          onProfilePress={onUpdatePressed}
+          onOpeningsPress={onCurrentOPressed}
+          OnMyJobsPress={handleMyJobs}
+          onContactPress={contactPressed}
+          />
+             {/*
           <View style={styles.buttonContainer}>
             <Text style={styles.textStyle}>Personal Details Section</Text>
             <CustomButton text="Click to View/Edit Details" onPress={onUpdatePressed} type="TERTIARY" style={styles.button} />
           </View>
           <View style={styles.buttonContainer}>
-         <CustomButton text="Connect with Us" onPress={contactPressed} type="PRIMARY"  />
+
+
+          <View style={styles.coContainer}>
+            <TouchableOpacity onPress={onCurrentOPressed}>
+                <Text style={styles.coText}>Current Openings</Text>
+            </TouchableOpacity>
+        </View>
+        <CustomButton text="Connect with Us" onPress={contactPressed} type="PRIMARY"  />
+
+
+       
+        </View>
+         */}
          <CustomButton text="Logout" onPress={onLogout} style={styles.signout} type="SECONDARY" />
  
-        </View>
         </View>
       </View>
     </ScrollView>
   );
 };
 
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#F5802C',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: '#1E1E20', // Set background for the whole ScrollView
   },
   spacer: {
     height: height * 0.05,
@@ -186,7 +233,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     padding: width * 0.05,
-    backgroundColor: '#1E1E20', 
+    backgroundColor: '#1E1E20',
     borderTopLeftRadius: 200,
   },
   header: {
@@ -205,8 +252,8 @@ const styles = StyleSheet.create({
     color: '#FFFF',
     textAlign: 'center',
   },
-  
-  
+ 
+ 
   profileContainer: {
     width: width * 0.25,
     height: width * 0.25,
@@ -228,7 +275,7 @@ const styles = StyleSheet.create({
     top: width * 0.08,   // Adjust based on your layout needs
     padding: 5,
     borderRadius: 5,
-  
+ 
   },
   signout: {
     // Ensure the CustomButton styles match or adjust as needed
@@ -237,7 +284,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  
+ 
   noDataText: {
     fontSize: width * 0.04,
     color: 'gray',
@@ -264,7 +311,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     alignSelf: 'center', // Center the block horizontally
-    width: width * 0.5, 
+    width: width * 0.5,
     alignItems:'center',
   },
   detailText: {
@@ -272,6 +319,24 @@ const styles = StyleSheet.create({
     fontSize: width * 0.04,
     color: '#333',
   },
+  coContainer: {      
+    paddingHorizontal: 15,        
+    backgroundColor: 'transparent',
+    margin: 10,                  
+},
+coText: {
+  fontFamily:'Montserrat-Bold',
+    fontSize: 30,    
+    textAlign:'center',
+    color: '#F5802C',              
+    marginBottom: 5,            
+},
 });
 
+
 export default CandidateDetails;
+
+
+
+
+
